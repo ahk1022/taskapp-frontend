@@ -18,6 +18,10 @@ const TaskManagement = () => {
     duration: 30,
     isActive: true
   });
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [importResult, setImportResult] = useState(null);
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadTasks();
@@ -162,6 +166,61 @@ const TaskManagement = () => {
     }
   };
 
+  const handleOpenImportModal = () => {
+    setShowImportModal(true);
+    setSelectedFile(null);
+    setImportResult(null);
+  };
+
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
+    setSelectedFile(null);
+    setImportResult(null);
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const validExtensions = ['.xlsx', '.xls'];
+      const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!validExtensions.includes(ext)) {
+        error('Please select a valid Excel file (.xlsx or .xls)');
+        e.target.value = '';
+        return;
+      }
+      setSelectedFile(file);
+      setImportResult(null);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!selectedFile) {
+      error('Please select a file to import');
+      return;
+    }
+
+    setImporting(true);
+    setImportResult(null);
+
+    try {
+      const response = await adminAPI.importTasks(selectedFile);
+      setImportResult(response.data);
+      if (response.data.success > 0) {
+        success(`Successfully imported ${response.data.success} tasks!`);
+        loadTasks();
+      }
+      if (response.data.failed > 0) {
+        error(`${response.data.failed} tasks failed to import`);
+      }
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || 'Failed to import tasks';
+      error(errorMsg);
+      setImportResult({ success: 0, failed: 0, errors: [errorMsg] });
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const getTypeStyle = (type) => {
     const styles = {
       watch_video: { backgroundColor: '#e74c3c', color: '#fff' },
@@ -184,9 +243,14 @@ const TaskManagement = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.title}>Task Management</h1>
-        <button onClick={() => handleOpenModal()} style={styles.createBtn}>
-          + Create New Task
-        </button>
+        <div style={styles.headerBtns}>
+          <button onClick={handleOpenImportModal} style={styles.importBtn}>
+            Import from Excel
+          </button>
+          <button onClick={() => handleOpenModal()} style={styles.createBtn}>
+            + Create New Task
+          </button>
+        </div>
       </div>
 
       <div style={styles.filterBar}>
@@ -429,6 +493,98 @@ const TaskManagement = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showImportModal && (
+        <div style={styles.modalOverlay} onClick={handleCloseImportModal}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Import Tasks from Excel</h2>
+              <button onClick={handleCloseImportModal} style={styles.closeBtn}>&times;</button>
+            </div>
+            <div style={styles.importContent}>
+              <div style={styles.importInfo}>
+                <h4 style={styles.infoTitle}>Excel File Format</h4>
+                <p style={styles.infoText}>Your Excel file should have the following columns:</p>
+                <table style={styles.formatTable}>
+                  <thead>
+                    <tr>
+                      <th style={styles.formatTh}>Column</th>
+                      <th style={styles.formatTh}>Required</th>
+                      <th style={styles.formatTh}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td style={styles.formatTd}>title</td><td style={styles.formatTd}>Yes</td><td style={styles.formatTd}>Task title</td></tr>
+                    <tr><td style={styles.formatTd}>description</td><td style={styles.formatTd}>Yes</td><td style={styles.formatTd}>Task description</td></tr>
+                    <tr><td style={styles.formatTd}>type</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>watch_video, click_ad, survey, social_media, other</td></tr>
+                    <tr><td style={styles.formatTd}>duration</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>Duration in seconds (default: 30)</td></tr>
+                    <tr><td style={styles.formatTd}>url</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>Task URL</td></tr>
+                    <tr><td style={styles.formatTd}>isActive</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>true/false (default: true)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={styles.fileInputContainer}>
+                <label style={styles.fileInputLabel}>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileSelect}
+                    style={styles.fileInput}
+                    disabled={importing}
+                  />
+                  <span style={styles.fileInputBtn}>Choose Excel File</span>
+                </label>
+                {selectedFile && (
+                  <span style={styles.fileName}>{selectedFile.name}</span>
+                )}
+              </div>
+
+              {importResult && (
+                <div style={styles.importResult}>
+                  <div style={{...styles.resultSummary, backgroundColor: importResult.failed > 0 ? '#fff3e0' : '#e8f5e9'}}>
+                    <span style={styles.resultSuccess}>{importResult.success} tasks imported</span>
+                    {importResult.failed > 0 && (
+                      <span style={styles.resultFailed}>{importResult.failed} failed</span>
+                    )}
+                  </div>
+                  {importResult.errors && importResult.errors.length > 0 && (
+                    <div style={styles.errorList}>
+                      <strong>Errors:</strong>
+                      <ul style={styles.errorUl}>
+                        {importResult.errors.map((err, idx) => (
+                          <li key={idx} style={styles.errorLi}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div style={styles.modalFooter}>
+                <button
+                  type="button"
+                  onClick={handleCloseImportModal}
+                  style={styles.cancelBtn}
+                  disabled={importing}
+                >
+                  {importResult ? 'Close' : 'Cancel'}
+                </button>
+                {!importResult && (
+                  <button
+                    type="button"
+                    onClick={handleImport}
+                    style={styles.submitBtn}
+                    disabled={importing || !selectedFile}
+                  >
+                    {importing ? 'Importing...' : 'Import Tasks'}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -694,6 +850,114 @@ const styles = {
     cursor: 'pointer',
     fontSize: '1rem',
     fontWeight: 'bold',
+  },
+  headerBtns: {
+    display: 'flex',
+    gap: '1rem',
+  },
+  importBtn: {
+    backgroundColor: '#3498db',
+    color: '#fff',
+    border: 'none',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '6px',
+    fontSize: '1rem',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  },
+  importContent: {
+    padding: '1.5rem',
+  },
+  importInfo: {
+    backgroundColor: '#f8f9fa',
+    padding: '1rem',
+    borderRadius: '6px',
+    marginBottom: '1.5rem',
+  },
+  infoTitle: {
+    margin: '0 0 0.5rem 0',
+    color: '#2c3e50',
+    fontSize: '1rem',
+  },
+  infoText: {
+    margin: '0 0 1rem 0',
+    color: '#7f8c8d',
+    fontSize: '0.9rem',
+  },
+  formatTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '0.85rem',
+  },
+  formatTh: {
+    backgroundColor: '#ecf0f1',
+    padding: '0.5rem',
+    textAlign: 'left',
+    borderBottom: '1px solid #bdc3c7',
+  },
+  formatTd: {
+    padding: '0.5rem',
+    borderBottom: '1px solid #ecf0f1',
+  },
+  fileInputContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    marginBottom: '1.5rem',
+  },
+  fileInputLabel: {
+    cursor: 'pointer',
+  },
+  fileInput: {
+    display: 'none',
+  },
+  fileInputBtn: {
+    display: 'inline-block',
+    backgroundColor: '#ecf0f1',
+    color: '#2c3e50',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '6px',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    border: '2px dashed #bdc3c7',
+    transition: 'all 0.2s',
+  },
+  fileName: {
+    color: '#2c3e50',
+    fontSize: '0.95rem',
+  },
+  importResult: {
+    marginBottom: '1.5rem',
+  },
+  resultSummary: {
+    padding: '1rem',
+    borderRadius: '6px',
+    display: 'flex',
+    gap: '1.5rem',
+    marginBottom: '1rem',
+  },
+  resultSuccess: {
+    color: '#27ae60',
+    fontWeight: 'bold',
+  },
+  resultFailed: {
+    color: '#e74c3c',
+    fontWeight: 'bold',
+  },
+  errorList: {
+    backgroundColor: '#ffebee',
+    padding: '1rem',
+    borderRadius: '6px',
+    fontSize: '0.9rem',
+  },
+  errorUl: {
+    margin: '0.5rem 0 0 0',
+    paddingLeft: '1.5rem',
+  },
+  errorLi: {
+    color: '#c62828',
+    marginBottom: '0.25rem',
   },
 };
 

@@ -27,6 +27,13 @@ export const adminAPI = {
   updateTask: (taskId, taskData) => api.put(`/admin/tasks/${taskId}`, taskData),
   deleteTask: (taskId) => api.delete(`/admin/tasks/${taskId}`),
   toggleTaskStatus: (taskId) => api.put(`/admin/tasks/${taskId}/toggle`),
+  importTasks: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/admin/tasks/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
 };
 
 export default adminAPI;
