@@ -13,7 +13,7 @@ const TaskManagement = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'other',
+    type: 'watch_video',
     url: '',
     duration: 30,
     isActive: true
@@ -71,7 +71,7 @@ const TaskManagement = () => {
     setFormData({
       title: '',
       description: '',
-      type: 'other',
+      type: 'watch_video',
       url: '',
       duration: 30,
       isActive: true
@@ -221,21 +221,13 @@ const TaskManagement = () => {
     }
   };
 
-  const getTypeStyle = (type) => {
-    const styles = {
-      watch_video: { backgroundColor: '#e74c3c', color: '#fff' },
-      click_ad: { backgroundColor: '#3498db', color: '#fff' },
-      survey: { backgroundColor: '#9b59b6', color: '#fff' },
-      social_media: { backgroundColor: '#1abc9c', color: '#fff' },
-      other: { backgroundColor: '#95a5a6', color: '#fff' },
-    };
-    return styles[type] || styles.other;
+  const getTypeStyle = () => {
+    return { backgroundColor: '#e74c3c', color: '#fff' };
   };
 
   const filteredTasks = tasks.filter(task => {
     if (filter === 'active') return task.isActive;
     if (filter === 'inactive') return !task.isActive;
-    if (filter && filter !== 'all') return task.type === filter;
     return true;
   });
 
@@ -255,8 +247,8 @@ const TaskManagement = () => {
 
       <div style={styles.filterBar}>
         <button
-          onClick={() => setFilter('all')}
-          style={{...styles.filterBtn, ...(filter === 'all' ? styles.activeFilter : {})}}
+          onClick={() => setFilter('')}
+          style={{...styles.filterBtn, ...(filter === '' ? styles.activeFilter : {})}}
         >
           All Tasks
         </button>
@@ -271,36 +263,6 @@ const TaskManagement = () => {
           style={{...styles.filterBtn, ...(filter === 'inactive' ? styles.activeFilter : {})}}
         >
           Inactive
-        </button>
-        <button
-          onClick={() => setFilter('watch_video')}
-          style={{...styles.filterBtn, ...(filter === 'watch_video' ? styles.activeFilter : {})}}
-        >
-          Videos
-        </button>
-        <button
-          onClick={() => setFilter('click_ad')}
-          style={{...styles.filterBtn, ...(filter === 'click_ad' ? styles.activeFilter : {})}}
-        >
-          Ads
-        </button>
-        <button
-          onClick={() => setFilter('survey')}
-          style={{...styles.filterBtn, ...(filter === 'survey' ? styles.activeFilter : {})}}
-        >
-          Surveys
-        </button>
-        <button
-          onClick={() => setFilter('social_media')}
-          style={{...styles.filterBtn, ...(filter === 'social_media' ? styles.activeFilter : {})}}
-        >
-          Social Media
-        </button>
-        <button
-          onClick={() => setFilter('')}
-          style={{...styles.filterBtn, ...(filter === '' ? styles.activeFilter : {})}}
-        >
-          All Types
         </button>
       </div>
 
@@ -318,7 +280,6 @@ const TaskManagement = () => {
               <tr>
                 <th style={styles.th}>Title</th>
                 <th style={styles.th}>Description</th>
-                <th style={styles.th}>Type</th>
                 <th style={styles.th}>Duration</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Created</th>
@@ -339,11 +300,6 @@ const TaskManagement = () => {
                     )}
                   </td>
                   <td style={styles.td}>{task.description}</td>
-                  <td style={styles.td}>
-                    <span style={{...styles.badge, ...getTypeStyle(task.type)}}>
-                      {task.type.replace('_', ' ')}
-                    </span>
-                  </td>
                   <td style={styles.td}>{task.duration}s</td>
                   <td style={styles.td}>
                     <span style={{
@@ -421,35 +377,17 @@ const TaskManagement = () => {
                 />
               </div>
 
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Type *</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({...formData, type: e.target.value})}
-                    style={styles.input}
-                    required
-                  >
-                    <option value="watch_video">Watch Video</option>
-                    <option value="click_ad">Click Ad</option>
-                    <option value="survey">Survey</option>
-                    <option value="social_media">Social Media</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Duration (seconds) *</label>
-                  <input
-                    type="number"
-                    value={formData.duration}
-                    onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 30})}
-                    style={styles.input}
-                    required
-                    min="1"
-                    placeholder="30"
-                  />
-                </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Duration (seconds) *</label>
+                <input
+                  type="number"
+                  value={formData.duration}
+                  onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 30})}
+                  style={styles.input}
+                  required
+                  min="1"
+                  placeholder="30"
+                />
               </div>
 
               <div style={styles.formGroup}>
@@ -519,9 +457,8 @@ const TaskManagement = () => {
                   <tbody>
                     <tr><td style={styles.formatTd}>title</td><td style={styles.formatTd}>Yes</td><td style={styles.formatTd}>Task title</td></tr>
                     <tr><td style={styles.formatTd}>description</td><td style={styles.formatTd}>Yes</td><td style={styles.formatTd}>Task description</td></tr>
-                    <tr><td style={styles.formatTd}>type</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>watch_video, click_ad, survey, social_media, other</td></tr>
                     <tr><td style={styles.formatTd}>duration</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>Duration in seconds (default: 30)</td></tr>
-                    <tr><td style={styles.formatTd}>url</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>Task URL</td></tr>
+                    <tr><td style={styles.formatTd}>url</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>Video URL</td></tr>
                     <tr><td style={styles.formatTd}>isActive</td><td style={styles.formatTd}>No</td><td style={styles.formatTd}>true/false (default: true)</td></tr>
                   </tbody>
                 </table>
