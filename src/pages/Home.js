@@ -63,9 +63,9 @@ const Home = () => {
             <ul style={styles.packageFeatures}>
               <li>✓ 3 tasks per day</li>
               <li>✓ 10 rupees per task</li>
-              <li>✓ 30 days validity</li>
-              <li>✓ Total earnings: 900 rupees</li>
-              <li>✓ Profit: 400 rupees</li>
+              <li>✓ 90 days validity</li>
+              <li>✓ Total earnings: 2700 rupees</li>
+              <li>✓ Profit: 2200 rupees</li>
             </ul>
           </div>
           <div style={styles.packageCard}>
@@ -74,9 +74,9 @@ const Home = () => {
             <ul style={styles.packageFeatures}>
               <li>✓ 6 tasks per day</li>
               <li>✓ 10 rupees per task</li>
-              <li>✓ 30 days validity</li>
-              <li>✓ Total earnings: 1800 rupees</li>
-              <li>✓ Profit: 800 rupees</li>
+              <li>✓ 90 days validity</li>
+              <li>✓ Total earnings: 5400 rupees</li>
+              <li>✓ Profit: 4400 rupees</li>
             </ul>
           </div>
           <div style={styles.packageCard}>
@@ -85,9 +85,9 @@ const Home = () => {
             <ul style={styles.packageFeatures}>
               <li>✓ 12 tasks per day</li>
               <li>✓ 10 rupees per task</li>
-              <li>✓ 30 days validity</li>
-              <li>✓ Total earnings: 3600 rupees</li>
-              <li>✓ Profit: 1600 rupees</li>
+              <li>✓ 90 days validity</li>
+              <li>✓ Total earnings: 10800 rupees</li>
+              <li>✓ Profit: 8800 rupees</li>
             </ul>
           </div>
           <div style={styles.packageCard}>
@@ -96,9 +96,9 @@ const Home = () => {
             <ul style={styles.packageFeatures}>
               <li>✓ 21 tasks per day</li>
               <li>✓ 10 rupees per task</li>
-              <li>✓ 30 days validity</li>
-              <li>✓ Total earnings: 6300 rupees</li>
-              <li>✓ Profit: 2800 rupees</li>
+              <li>✓ 90 days validity</li>
+              <li>✓ Total earnings: 18900 rupees</li>
+              <li>✓ Profit: 15400 rupees</li>
             </ul>
           </div>
         </div>
