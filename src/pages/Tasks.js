@@ -78,14 +78,24 @@ const Tasks = () => {
   const getEmbedUrl = (url) => {
     if (!url) return null;
 
+    // Handle YouTube Shorts URLs first
+    const shortsRegex = /(?:www\.|m\.)?youtube\.com\/shorts\/([^"&?\/\s]{11})/;
+    const shortsMatch = url.match(shortsRegex);
+    if (shortsMatch) {
+      console.log('YouTube Shorts detected:', shortsMatch[1]);
+      return `https://www.youtube-nocookie.com/embed/${shortsMatch[1]}?autoplay=1&rel=0&modestbranding=1`;
+    }
+
     // YouTube URL conversion - handles www.youtube.com, youtube.com, youtu.be, and m.youtube.com
     const youtubeRegex = /(?:(?:www\.|m\.)?youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const youtubeMatch = url.match(youtubeRegex);
     if (youtubeMatch) {
+      console.log('YouTube video detected:', youtubeMatch[1]);
       return `https://www.youtube-nocookie.com/embed/${youtubeMatch[1]}?autoplay=1&rel=0&modestbranding=1`;
     }
 
-    // For other URLs, return as-is
+    // For other URLs, return as-is - this will cause "refused to connect" for YouTube
+    console.log('URL not recognized as YouTube, using as-is:', url);
     return url;
   };
 
