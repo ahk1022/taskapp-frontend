@@ -78,23 +78,52 @@ const Tasks = () => {
   const getEmbedUrl = (url) => {
     if (!url) return null;
 
-    // Handle YouTube Shorts URLs first
-    const shortsRegex = /(?:www\.|m\.)?youtube\.com\/shorts\/([^"&?\/\s]{11})/;
-    const shortsMatch = url.match(shortsRegex);
-    if (shortsMatch) {
-      console.log('YouTube Shorts detected:', shortsMatch[1]);
-      return `https://www.youtube-nocookie.com/embed/${shortsMatch[1]}?autoplay=1&rel=0&modestbranding=1`;
+    // Extract YouTube video ID from any YouTube URL format
+    const getYouTubeId = (url) => {
+      // Remove any leading/trailing whitespace
+      url = url.trim();
+
+      // Pattern 1: youtu.be/VIDEO_ID
+      if (url.includes('youtu.be/')) {
+        const match = url.split('youtu.be/')[1];
+        if (match) return match.split(/[?&#]/)[0];
+      }
+
+      // Pattern 2: youtube.com/shorts/VIDEO_ID
+      if (url.includes('/shorts/')) {
+        const match = url.split('/shorts/')[1];
+        if (match) return match.split(/[?&#]/)[0];
+      }
+
+      // Pattern 3: youtube.com/embed/VIDEO_ID
+      if (url.includes('/embed/')) {
+        const match = url.split('/embed/')[1];
+        if (match) return match.split(/[?&#]/)[0];
+      }
+
+      // Pattern 4: youtube.com/v/VIDEO_ID
+      if (url.includes('/v/')) {
+        const match = url.split('/v/')[1];
+        if (match) return match.split(/[?&#]/)[0];
+      }
+
+      // Pattern 5: youtube.com/watch?v=VIDEO_ID (most common)
+      if (url.includes('v=')) {
+        const match = url.split('v=')[1];
+        if (match) return match.split(/[?&#]/)[0];
+      }
+
+      return null;
+    };
+
+    const videoId = getYouTubeId(url);
+
+    if (videoId && videoId.length === 11) {
+      console.log('YouTube video ID extracted:', videoId);
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
     }
 
-    // YouTube URL conversion - handles www.youtube.com, youtube.com, youtu.be, and m.youtube.com
-    const youtubeRegex = /(?:(?:www\.|m\.)?youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const youtubeMatch = url.match(youtubeRegex);
-    if (youtubeMatch) {
-      console.log('YouTube video detected:', youtubeMatch[1]);
-      return `https://www.youtube-nocookie.com/embed/${youtubeMatch[1]}?autoplay=1&rel=0&modestbranding=1`;
-    }
-
-    // For other URLs, return as-is - this will cause "refused to connect" for YouTube
+    // For other URLs, return as-is
     console.log('URL not recognized as YouTube, using as-is:', url);
     return url;
   };
