@@ -78,8 +78,8 @@ const Tasks = () => {
   const getEmbedUrl = (url) => {
     if (!url) return null;
 
-    // YouTube URL conversion
-    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    // YouTube URL conversion - handles www.youtube.com, youtube.com, youtu.be, and m.youtube.com
+    const youtubeRegex = /(?:(?:www\.|m\.)?youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const youtubeMatch = url.match(youtubeRegex);
     if (youtubeMatch) {
       return `https://www.youtube-nocookie.com/embed/${youtubeMatch[1]}?autoplay=1&rel=0&modestbranding=1`;
