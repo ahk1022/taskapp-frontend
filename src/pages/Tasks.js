@@ -150,6 +150,11 @@ const Tasks = () => {
 
           {currentTask.url && (
             <div style={styles.embedContainer}>
+              {/* Debug: show original and converted URLs */}
+              <div style={{fontSize: '10px', color: '#666', marginBottom: '5px', wordBreak: 'break-all'}}>
+                Original: {currentTask.url}<br/>
+                Embed: {getEmbedUrl(currentTask.url)}
+              </div>
               <iframe
                 src={getEmbedUrl(currentTask.url)}
                 style={styles.iframe}
