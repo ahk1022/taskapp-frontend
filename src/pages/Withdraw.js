@@ -62,7 +62,7 @@ const Withdraw = () => {
           accountName: formData.accountName,
           accountNumber: formData.accountNumber,
           bankName: formData.method === 'bank' ? formData.bankName : undefined,
-          phoneNumber: ['nayapay', 'zindigi'].includes(formData.method)
+          phoneNumber: ['nayapay', 'jazzcash', 'easypaisa', 'zindigi'].includes(formData.method)
             ? formData.phoneNumber
             : undefined,
         },
