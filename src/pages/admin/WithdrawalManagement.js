@@ -89,6 +89,17 @@ const WithdrawalManagement = () => {
     return styles[status] || {};
   };
 
+  const getMethodStyle = (method) => {
+    const methodStyles = {
+      jazzcash: { backgroundColor: '#e74c3c', color: '#fff' },
+      easypaisa: { backgroundColor: '#27ae60', color: '#fff' },
+      nayapay: { backgroundColor: '#9b59b6', color: '#fff' },
+      raast: { backgroundColor: '#2c3e50', color: '#fff' },
+      zindigi: { backgroundColor: '#e67e22', color: '#fff' },
+    };
+    return methodStyles[method] || { backgroundColor: '#7f8c8d', color: '#fff' };
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Withdrawal Management</h1>
@@ -178,7 +189,11 @@ const WithdrawalManagement = () => {
                       <div style={styles.paymentNote}>Transfer this amount</div>
                     </div>
                   </td>
-                  <td style={styles.td}>{withdrawal.method.toUpperCase()}</td>
+                  <td style={styles.td}>
+                    <span style={{...styles.methodBadge, ...getMethodStyle(withdrawal.method)}}>
+                      {withdrawal.method.toUpperCase()}
+                    </span>
+                  </td>
                   <td style={styles.td}>
                     <div style={styles.accountDetails}>
                       <div><strong>Name:</strong> {withdrawal.accountDetails.accountName}</div>
@@ -450,6 +465,13 @@ const styles = {
     borderRadius: '12px',
     fontSize: '0.85rem',
     fontWeight: 'bold',
+  },
+  methodBadge: {
+    padding: '0.4rem 0.75rem',
+    borderRadius: '6px',
+    fontSize: '0.8rem',
+    fontWeight: 'bold',
+    display: 'inline-block',
   },
   actionButtons: {
     display: 'flex',

@@ -62,9 +62,7 @@ const Withdraw = () => {
           accountName: formData.accountName,
           accountNumber: formData.accountNumber,
           bankName: formData.method === 'bank' ? formData.bankName : undefined,
-          phoneNumber: ['nayapay', 'jazzcash', 'easypaisa', 'zindigi'].includes(formData.method)
-            ? formData.phoneNumber
-            : undefined,
+          phoneNumber: formData.phoneNumber,
         },
       });
 
@@ -170,20 +168,18 @@ const Withdraw = () => {
               />
             </div>
 
-            {['nayapay', 'jazzcash', 'easypaisa', 'zindigi'].includes(formData.method) && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Phone Number</label>
-                <input
-                  type="tel"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="03XX-XXXXXXX"
-                  required
-                />
-              </div>
-            )}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Phone Number</label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                style={styles.input}
+                placeholder="03XX-XXXXXXX"
+                required
+              />
+            </div>
 
             {formData.method === 'raast' && (
               <div style={styles.formGroup}>
