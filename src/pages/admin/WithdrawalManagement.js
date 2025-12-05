@@ -155,6 +155,8 @@ const WithdrawalManagement = () => {
                       <br />
                       <small>{withdrawal.user?.email}</small>
                       <br />
+                      <small style={{color: '#3498db', fontWeight: 'bold'}}>{withdrawal.user?.phone}</small>
+                      <br />
                       <small>Balance: ₨{withdrawal.user?.wallet?.balance}</small>
                     </div>
                   </td>
