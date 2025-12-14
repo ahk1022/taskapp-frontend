@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../utils/api';
+import theme from '../theme';
 
 const Referrals = () => {
   const { user } = useAuth();
@@ -37,52 +38,66 @@ const Referrals = () => {
   };
 
   if (loading) {
-    return <div style={styles.loading}>Loading referrals...</div>;
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.loadingSpinner}></div>
+        <p style={styles.loadingText}>Loading referrals...</p>
+      </div>
+    );
   }
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Referral Program</h1>
+      <div style={styles.header}>
+        <span style={styles.badge}>Earn More</span>
+        <h1 style={styles.title}>Referral Program</h1>
+        <p style={styles.subtitle}>Invite friends and earn ₨10 for each successful referral</p>
+      </div>
 
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <h3>Total Referrals</h3>
+          <div style={styles.statIcon}>👥</div>
+          <h3 style={styles.statLabel}>Total Referrals</h3>
           <p style={styles.statValue}>{user?.referralCount || 0}</p>
         </div>
         <div style={styles.statCard}>
-          <h3>Referral Earnings</h3>
-          <p style={styles.statValue}>₨ {user?.wallet?.referralEarnings || 0}</p>
+          <div style={styles.statIcon}>💰</div>
+          <h3 style={styles.statLabel}>Referral Earnings</h3>
+          <p style={styles.statValueSuccess}>₨ {user?.wallet?.referralEarnings || 0}</p>
         </div>
         <div style={styles.statCard}>
-          <h3>Earnings Per Referral</h3>
+          <div style={styles.statIcon}>🎁</div>
+          <h3 style={styles.statLabel}>Per Referral</h3>
           <p style={styles.statValue}>₨ 10</p>
         </div>
       </div>
 
       <div style={styles.referralSection}>
-        <h2 style={styles.sectionTitle}>Your Referral Code</h2>
         <div style={styles.codeCard}>
+          <h2 style={styles.sectionTitle}>Your Referral Code</h2>
           <div style={styles.codeDisplay}>
             <code style={styles.code}>{user?.referralCode}</code>
             <button onClick={copyReferralLink} style={styles.copyBtn}>
-              {copied ? 'Copied!' : 'Copy Link'}
+              {copied ? '✓ Copied!' : 'Copy Link'}
             </button>
           </div>
 
           <div style={styles.shareSection}>
-            <p style={styles.shareText}>Share your referral link:</p>
+            <p style={styles.shareLabel}>Share your referral link:</p>
             <div style={styles.shareButtons}>
               <button onClick={shareViaWhatsApp} style={styles.whatsappBtn}>
+                <span style={styles.shareIcon}>📱</span>
                 Share on WhatsApp
               </button>
               <button onClick={copyReferralLink} style={styles.shareBtn}>
+                <span style={styles.shareIcon}>📋</span>
                 Copy Link
               </button>
             </div>
           </div>
 
           <div style={styles.infoBox}>
-            <h4>How it works:</h4>
+            <h4 style={styles.infoTitle}>How it works:</h4>
             <ol style={styles.infoList}>
               <li>Share your referral link or code with friends</li>
               <li>When they register using your code, you earn ₨10 instantly</li>
@@ -98,8 +113,9 @@ const Referrals = () => {
 
         {referrals.length === 0 ? (
           <div style={styles.emptyState}>
-            <p>You haven't referred anyone yet</p>
-            <p style={styles.emptySubtext}>Start sharing your referral code to earn ₨10 per referral!</p>
+            <div style={styles.emptyIcon}>👥</div>
+            <p style={styles.emptyTitle}>No referrals yet</p>
+            <p style={styles.emptyText}>Start sharing your referral code to earn ₨10 per referral!</p>
           </div>
         ) : (
           <div style={styles.tableContainer}>
@@ -109,22 +125,22 @@ const Referrals = () => {
                   <th style={styles.th}>#</th>
                   <th style={styles.th}>Username</th>
                   <th style={styles.th}>Email</th>
-                  <th style={styles.th}>Joined Date</th>
-                  <th style={styles.th}>Tasks Done</th>
-                  <th style={styles.th}>Their Earnings</th>
+                  <th style={styles.th}>Joined</th>
+                  <th style={styles.th}>Tasks</th>
+                  <th style={styles.th}>Earnings</th>
                 </tr>
               </thead>
               <tbody>
                 {referrals.map((referral, index) => (
                   <tr key={referral._id} style={styles.tr}>
                     <td style={styles.td}>{index + 1}</td>
-                    <td style={styles.td}>{referral.username}</td>
+                    <td style={styles.tdBold}>{referral.username}</td>
                     <td style={styles.td}>{referral.email}</td>
                     <td style={styles.td}>
                       {new Date(referral.createdAt).toLocaleDateString()}
                     </td>
                     <td style={styles.td}>{referral.tasksCompleted}</td>
-                    <td style={styles.td}>₨ {referral.wallet?.earnings || 0}</td>
+                    <td style={styles.tdSuccess}>₨ {referral.wallet?.earnings || 0}</td>
                   </tr>
                 ))}
               </tbody>
@@ -137,20 +153,24 @@ const Referrals = () => {
         <h2 style={styles.sectionTitle}>Tips to Maximize Referrals</h2>
         <div style={styles.tipsGrid}>
           <div style={styles.tipCard}>
-            <h3>📱 Share on Social Media</h3>
-            <p>Post your referral link on Facebook, WhatsApp groups, Instagram</p>
+            <div style={styles.tipIcon}>📱</div>
+            <h3 style={styles.tipTitle}>Share on Social Media</h3>
+            <p style={styles.tipText}>Post your referral link on Facebook, WhatsApp groups, Instagram</p>
           </div>
           <div style={styles.tipCard}>
-            <h3>👥 Tell Friends & Family</h3>
-            <p>Personal recommendations work best - tell people you know</p>
+            <div style={styles.tipIcon}>👥</div>
+            <h3 style={styles.tipTitle}>Tell Friends & Family</h3>
+            <p style={styles.tipText}>Personal recommendations work best - tell people you know</p>
           </div>
           <div style={styles.tipCard}>
-            <h3>💬 Join Communities</h3>
-            <p>Share in online forums and communities interested in earning money</p>
+            <div style={styles.tipIcon}>💬</div>
+            <h3 style={styles.tipTitle}>Join Communities</h3>
+            <p style={styles.tipText}>Share in online forums and communities interested in earning money</p>
           </div>
           <div style={styles.tipCard}>
-            <h3>📧 Email Contacts</h3>
-            <p>Send personalized emails to your contacts explaining the benefits</p>
+            <div style={styles.tipIcon}>📧</div>
+            <h3 style={styles.tipTitle}>Email Contacts</h3>
+            <p style={styles.tipText}>Send personalized emails to your contacts explaining the benefits</p>
           </div>
         </div>
       </div>
@@ -164,49 +184,101 @@ const styles = {
     margin: '0 auto',
     padding: '2rem 1rem',
   },
-  loading: {
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    gap: '1rem',
+  },
+  loadingSpinner: {
+    width: '48px',
+    height: '48px',
+    border: `4px solid ${theme.colors.borderLight}`,
+    borderTopColor: theme.colors.primary,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  loadingText: {
+    color: theme.colors.textSecondary,
+    fontSize: '1.1rem',
+  },
+  header: {
     textAlign: 'center',
-    padding: '3rem',
-    fontSize: '1.2rem',
+    marginBottom: '3rem',
+  },
+  badge: {
+    display: 'inline-block',
+    backgroundColor: theme.colors.successBg,
+    color: theme.colors.success,
+    padding: '0.5rem 1rem',
+    borderRadius: theme.radius.full,
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    marginBottom: '1rem',
   },
   title: {
-    fontSize: '2rem',
-    color: '#2c3e50',
-    marginBottom: '2rem',
-    textAlign: 'center',
+    fontSize: '2.5rem',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.5rem',
+  },
+  subtitle: {
+    color: theme.colors.textSecondary,
+    fontSize: '1.1rem',
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '1.5rem',
     marginBottom: '3rem',
   },
   statCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
     textAlign: 'center',
+    border: `1px solid ${theme.colors.borderLight}`,
+  },
+  statIcon: {
+    fontSize: '2.5rem',
+    marginBottom: '0.75rem',
+  },
+  statLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: '0.9rem',
+    marginBottom: '0.5rem',
+    fontWeight: '500',
   },
   statValue: {
-    fontSize: '2.5rem',
-    fontWeight: 'bold',
-    color: '#27ae60',
-    margin: '1rem 0',
+    fontSize: '2rem',
+    fontWeight: '800',
+    color: theme.colors.primaryDark,
+    margin: 0,
+  },
+  statValueSuccess: {
+    fontSize: '2rem',
+    fontWeight: '800',
+    color: theme.colors.success,
+    margin: 0,
   },
   referralSection: {
     marginBottom: '3rem',
   },
   sectionTitle: {
     fontSize: '1.5rem',
-    color: '#2c3e50',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
     marginBottom: '1.5rem',
   },
   codeCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
+    border: `1px solid ${theme.colors.borderLight}`,
   },
   codeDisplay: {
     display: 'flex',
@@ -217,29 +289,36 @@ const styles = {
   code: {
     flex: 1,
     minWidth: '200px',
-    padding: '1rem',
-    backgroundColor: '#ecf0f1',
-    borderRadius: '4px',
+    padding: '1rem 1.5rem',
+    backgroundColor: theme.colors.background,
+    border: `2px solid ${theme.colors.border}`,
+    borderRadius: theme.radius.lg,
     fontSize: '1.5rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     textAlign: 'center',
+    color: theme.colors.primaryDark,
+    letterSpacing: '2px',
   },
   copyBtn: {
-    backgroundColor: '#3498db',
-    color: '#fff',
+    background: `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.primaryDark} 100%)`,
+    color: theme.colors.white,
     border: 'none',
     padding: '1rem 2rem',
-    borderRadius: '4px',
+    borderRadius: theme.radius.lg,
     fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     cursor: 'pointer',
+    boxShadow: theme.shadows.button,
+    transition: 'all 0.2s ease',
+    minWidth: '140px',
   },
   shareSection: {
     marginBottom: '2rem',
   },
-  shareText: {
+  shareLabel: {
     marginBottom: '1rem',
-    color: '#2c3e50',
+    color: theme.colors.textSecondary,
+    fontWeight: '500',
   },
   shareButtons: {
     display: 'flex',
@@ -248,71 +327,113 @@ const styles = {
   },
   whatsappBtn: {
     backgroundColor: '#25D366',
-    color: '#fff',
+    color: theme.colors.white,
     border: 'none',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '4px',
+    padding: '0.875rem 1.5rem',
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '600',
     cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.2s ease',
   },
   shareBtn: {
-    backgroundColor: '#7f8c8d',
-    color: '#fff',
-    border: 'none',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '4px',
+    backgroundColor: theme.colors.background,
+    color: theme.colors.textPrimary,
+    border: `2px solid ${theme.colors.border}`,
+    padding: '0.875rem 1.5rem',
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '600',
     cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.2s ease',
+  },
+  shareIcon: {
+    fontSize: '1.1rem',
   },
   infoBox: {
-    backgroundColor: '#e8f5e9',
-    border: '1px solid #27ae60',
-    borderRadius: '8px',
+    background: `linear-gradient(135deg, ${theme.colors.successBg} 0%, ${theme.colors.primaryBg} 100%)`,
+    border: `1px solid ${theme.colors.successLight}`,
+    borderRadius: theme.radius.lg,
     padding: '1.5rem',
+  },
+  infoTitle: {
+    color: theme.colors.primaryDark,
+    marginBottom: '0.75rem',
+    fontSize: '1rem',
+    fontWeight: '600',
   },
   infoList: {
     marginTop: '0.5rem',
     paddingLeft: '1.5rem',
-    lineHeight: '1.8',
+    lineHeight: '2',
+    color: theme.colors.textSecondary,
   },
   referralListSection: {
     marginBottom: '3rem',
   },
   emptyState: {
-    backgroundColor: '#fff',
-    padding: '3rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    backgroundColor: theme.colors.white,
+    padding: '4rem 2rem',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
     textAlign: 'center',
+    border: `1px solid ${theme.colors.borderLight}`,
   },
-  emptySubtext: {
-    color: '#7f8c8d',
-    marginTop: '0.5rem',
+  emptyIcon: {
+    fontSize: '4rem',
+    marginBottom: '1rem',
+  },
+  emptyTitle: {
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.5rem',
+  },
+  emptyText: {
+    color: theme.colors.textSecondary,
   },
   tableContainer: {
-    backgroundColor: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
     overflowX: 'auto',
+    border: `1px solid ${theme.colors.borderLight}`,
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
   },
   th: {
-    backgroundColor: '#2c3e50',
-    color: '#fff',
+    background: `linear-gradient(135deg, ${theme.colors.primaryDark} 0%, ${theme.colors.primary} 100%)`,
+    color: theme.colors.white,
     padding: '1rem',
     textAlign: 'left',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: '0.9rem',
   },
   tr: {
-    borderBottom: '1px solid #ecf0f1',
+    borderBottom: `1px solid ${theme.colors.borderLight}`,
+    transition: 'background-color 0.2s ease',
   },
   td: {
     padding: '1rem',
+    color: theme.colors.textSecondary,
+  },
+  tdBold: {
+    padding: '1rem',
+    color: theme.colors.primaryDark,
+    fontWeight: '600',
+  },
+  tdSuccess: {
+    padding: '1rem',
+    color: theme.colors.success,
+    fontWeight: '700',
   },
   tipsSection: {
     marginBottom: '3rem',
@@ -323,10 +444,28 @@ const styles = {
     gap: '1.5rem',
   },
   tipCard: {
-    backgroundColor: '#fff',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    backgroundColor: theme.colors.white,
+    padding: '2rem',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
+    textAlign: 'center',
+    border: `1px solid ${theme.colors.borderLight}`,
+    transition: 'all 0.2s ease',
+  },
+  tipIcon: {
+    fontSize: '2.5rem',
+    marginBottom: '1rem',
+  },
+  tipTitle: {
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.5rem',
+  },
+  tipText: {
+    color: theme.colors.textSecondary,
+    fontSize: '0.95rem',
+    lineHeight: '1.6',
   },
 };
 

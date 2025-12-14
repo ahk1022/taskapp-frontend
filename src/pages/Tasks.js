@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { taskAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../components/Notification';
+import theme from '../theme';
 
 const Tasks = () => {
   const { user, updateUser } = useAuth();
@@ -10,7 +11,7 @@ const Tasks = () => {
   const [taskInfo, setTaskInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTask, setActiveTask] = useState(null);
-  const [currentTask, setCurrentTask] = useState(null); // Store the full task object
+  const [currentTask, setCurrentTask] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
@@ -47,10 +48,8 @@ const Tasks = () => {
     try {
       const response = await taskAPI.start(task._id);
       setActiveTask(response.data.userTask);
-      setCurrentTask(task); // Store the task for URL access
+      setCurrentTask(task);
       setTimeLeft(task.duration);
-
-      // Remove task from available tasks
       setTasks(tasks.filter(t => t._id !== task._id));
     } catch (err) {
       error(err.response?.data?.message || 'Failed to start task. Please try again.');
@@ -60,85 +59,72 @@ const Tasks = () => {
   const handleCompleteTask = async () => {
     try {
       const response = await taskAPI.complete(activeTask._id);
-      success(`Congratulations! Task completed successfully. You earned ₨${response.data.reward} which has been added to your wallet.`);
-
-      // Update user balance
+      success(`Task completed! You earned ₨${response.data.reward}`);
       updateUser({ wallet: { ...user.wallet, balance: response.data.newBalance } });
-
       setActiveTask(null);
       setCurrentTask(null);
       setTimeLeft(0);
-      loadTasks(); // Reload tasks
+      loadTasks();
     } catch (err) {
-      error(err.response?.data?.message || 'Failed to complete task. Please contact support if the issue persists.');
+      error(err.response?.data?.message || 'Failed to complete task.');
     }
   };
 
-  // Helper function to get embeddable URL
   const getEmbedUrl = (url) => {
     if (!url) return null;
 
-    // Extract YouTube video ID from any YouTube URL format
     const getYouTubeId = (url) => {
-      // Remove any leading/trailing whitespace
       url = url.trim();
-
-      // Pattern 1: youtu.be/VIDEO_ID
       if (url.includes('youtu.be/')) {
         const match = url.split('youtu.be/')[1];
         if (match) return match.split(/[?&#]/)[0];
       }
-
-      // Pattern 2: youtube.com/shorts/VIDEO_ID
       if (url.includes('/shorts/')) {
         const match = url.split('/shorts/')[1];
         if (match) return match.split(/[?&#]/)[0];
       }
-
-      // Pattern 3: youtube.com/embed/VIDEO_ID
       if (url.includes('/embed/')) {
         const match = url.split('/embed/')[1];
         if (match) return match.split(/[?&#]/)[0];
       }
-
-      // Pattern 4: youtube.com/v/VIDEO_ID
       if (url.includes('/v/')) {
         const match = url.split('/v/')[1];
         if (match) return match.split(/[?&#]/)[0];
       }
-
-      // Pattern 5: youtube.com/watch?v=VIDEO_ID (most common)
       if (url.includes('v=')) {
         const match = url.split('v=')[1];
         if (match) return match.split(/[?&#]/)[0];
       }
-
       return null;
     };
 
     const videoId = getYouTubeId(url);
-
     if (videoId && videoId.length === 11) {
-      console.log('YouTube video ID extracted:', videoId);
       return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
     }
-
-    // For other URLs, return as-is
-    console.log('URL not recognized as YouTube, using as-is:', url);
     return url;
   };
 
   if (loading) {
-    return <div style={styles.loading}>Loading tasks...</div>;
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.loadingSpinner}></div>
+        <p style={styles.loadingText}>Loading tasks...</p>
+      </div>
+    );
   }
 
   if (!user?.currentPackage) {
     return (
       <div style={styles.container}>
         <div style={styles.noPackageCard}>
-          <h2>No Active Package</h2>
-          <p>You need to purchase a package to access tasks</p>
-          <a href="/packages" style={styles.buyBtn}>Buy Package</a>
+          <div style={styles.noPackageIcon}>📦</div>
+          <h2 style={styles.noPackageTitle}>No Active Package</h2>
+          <p style={styles.noPackageText}>You need to purchase a package to access tasks</p>
+          <a href="/packages" style={styles.buyBtn}>
+            Browse Packages
+            <span style={styles.btnArrow}>→</span>
+          </a>
         </div>
       </div>
     );
@@ -146,44 +132,49 @@ const Tasks = () => {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Available Tasks</h1>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Available Tasks</h1>
+        <p style={styles.subtitle}>Complete tasks to earn rewards</p>
+      </div>
 
       {taskInfo && (
         <div style={styles.infoCard}>
           <div style={styles.infoItem}>
-            <span>Tasks Completed Today</span>
-            <strong>{taskInfo.tasksCompletedToday} / {taskInfo.tasksAllowed}</strong>
+            <div style={styles.infoIcon}>✅</div>
+            <span style={styles.infoLabel}>Completed Today</span>
+            <strong style={styles.infoValue}>{taskInfo.tasksCompletedToday} / {taskInfo.tasksAllowed}</strong>
           </div>
           <div style={styles.infoItem}>
-            <span>Tasks Remaining</span>
-            <strong>{taskInfo.tasksRemaining}</strong>
+            <div style={styles.infoIcon}>📋</div>
+            <span style={styles.infoLabel}>Tasks Remaining</span>
+            <strong style={styles.infoValue}>{taskInfo.tasksRemaining}</strong>
           </div>
           <div style={styles.infoItem}>
-            <span>Reward Per Task</span>
-            <strong>₨ {taskInfo.rewardPerTask}</strong>
+            <div style={styles.infoIcon}>💰</div>
+            <span style={styles.infoLabel}>Reward Per Task</span>
+            <strong style={styles.infoValueHighlight}>₨ {taskInfo.rewardPerTask}</strong>
           </div>
         </div>
       )}
 
       {activeTask && currentTask && (
         <div style={styles.activeTaskCard}>
-          <div style={styles.taskHeader}>
-            <div>
-              <h2>{currentTask.title}</h2>
-              <p style={styles.taskSubtitle}>{currentTask.description}</p>
+          <div style={styles.activeHeader}>
+            <div style={styles.activeInfo}>
+              <span style={styles.activeLabel}>Current Task</span>
+              <h2 style={styles.activeTitle}>{currentTask.title}</h2>
+              <p style={styles.activeDesc}>{currentTask.description}</p>
             </div>
-            <div style={styles.timerBadge}>
-              <span style={styles.timerText}>{timeLeft}s</span>
+            <div style={styles.timerWrapper}>
+              <div style={styles.timerCircle}>
+                <span style={styles.timerValue}>{timeLeft}</span>
+                <span style={styles.timerUnit}>sec</span>
+              </div>
             </div>
           </div>
 
           {currentTask.url && (
             <div style={styles.embedContainer}>
-              {/* Debug: show original and converted URLs */}
-              <div style={{fontSize: '10px', color: '#666', marginBottom: '5px', wordBreak: 'break-all'}}>
-                Original: {currentTask.url}<br/>
-                Embed: {getEmbedUrl(currentTask.url)}
-              </div>
               <iframe
                 src={getEmbedUrl(currentTask.url)}
                 style={styles.iframe}
@@ -197,18 +188,27 @@ const Tasks = () => {
 
           {!currentTask.url && (
             <div style={styles.noUrlMessage}>
-              <p>Please complete the task as instructed</p>
-              <div style={styles.timer}>
-                <div style={styles.timerCircle}>
-                  <span style={styles.timerTextLarge}>{timeLeft}s</span>
+              <div style={styles.bigTimer}>
+                <div style={styles.bigTimerCircle}>
+                  <span style={styles.bigTimerValue}>{timeLeft}</span>
+                  <span style={styles.bigTimerUnit}>seconds</span>
                 </div>
               </div>
+              <p style={styles.waitText}>Please wait for the timer to complete</p>
             </div>
           )}
 
-          <p style={styles.instruction}>
+          <div style={styles.progressBar}>
+            <div
+              style={{
+                ...styles.progressFill,
+                width: `${((currentTask.duration - timeLeft) / currentTask.duration) * 100}%`
+              }}
+            ></div>
+          </div>
+          <p style={styles.earnText}>
             {timeLeft > 0
-              ? `Wait ${timeLeft} seconds to complete this task and earn ₨${taskInfo?.rewardPerTask}`
+              ? `Complete this task to earn ₨${taskInfo?.rewardPerTask}`
               : 'Processing completion...'}
           </p>
         </div>
@@ -216,10 +216,15 @@ const Tasks = () => {
 
       {!activeTask && tasks.length === 0 && (
         <div style={styles.emptyState}>
-          <h3>{taskInfo?.tasksRemaining === 0 ? 'Daily Limit Reached' : 'No Tasks Available'}</h3>
-          <p>
+          <div style={styles.emptyIcon}>
+            {taskInfo?.tasksRemaining === 0 ? '🎉' : '📋'}
+          </div>
+          <h3 style={styles.emptyTitle}>
+            {taskInfo?.tasksRemaining === 0 ? 'Daily Limit Reached!' : 'No Tasks Available'}
+          </h3>
+          <p style={styles.emptyText}>
             {taskInfo?.tasksRemaining === 0
-              ? 'You have completed all your tasks for today. Come back tomorrow!'
+              ? 'Great job! You have completed all your tasks for today. Come back tomorrow!'
               : 'Check back later for new tasks'}
           </p>
         </div>
@@ -232,15 +237,20 @@ const Tasks = () => {
             <h3 style={styles.taskTitle}>{task.title}</h3>
             <p style={styles.taskDescription}>{task.description}</p>
             <div style={styles.taskMeta}>
-              <span>Duration: {task.duration}s</span>
-              <span style={styles.reward}>₨ {taskInfo?.rewardPerTask}</span>
+              <div style={styles.taskMetaItem}>
+                <span style={styles.metaIcon}>⏱️</span>
+                <span>{task.duration}s</span>
+              </div>
+              <div style={styles.rewardBadge}>
+                ₨ {taskInfo?.rewardPerTask}
+              </div>
             </div>
             <button
               onClick={() => handleStartTask(task)}
               style={styles.startBtn}
               disabled={!!activeTask}
             >
-              Start Task
+              {activeTask ? 'Task in Progress...' : 'Start Task'}
             </button>
           </div>
         ))}
@@ -255,83 +265,178 @@ const styles = {
     margin: '0 auto',
     padding: '2rem 1rem',
   },
-  loading: {
-    textAlign: 'center',
-    padding: '3rem',
-    fontSize: '1.2rem',
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    gap: '1rem',
+  },
+  loadingSpinner: {
+    width: '48px',
+    height: '48px',
+    border: `4px solid ${theme.colors.borderLight}`,
+    borderTopColor: theme.colors.primary,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  loadingText: {
+    color: theme.colors.textSecondary,
+    fontSize: '1.1rem',
+  },
+  header: {
+    marginBottom: '2rem',
   },
   title: {
     fontSize: '2rem',
-    color: '#2c3e50',
-    marginBottom: '2rem',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.25rem',
+  },
+  subtitle: {
+    color: theme.colors.textSecondary,
+  },
+  noPackageCard: {
+    backgroundColor: theme.colors.white,
+    padding: '4rem 2rem',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
+    textAlign: 'center',
+    maxWidth: '500px',
+    margin: '2rem auto',
+  },
+  noPackageIcon: {
+    fontSize: '4rem',
+    marginBottom: '1rem',
+  },
+  noPackageTitle: {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.5rem',
+  },
+  noPackageText: {
+    color: theme.colors.textSecondary,
+    marginBottom: '1.5rem',
+  },
+  buyBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    background: `linear-gradient(135deg, ${theme.colors.success} 0%, ${theme.colors.successDark} 100%)`,
+    color: theme.colors.white,
+    padding: '1rem 2rem',
+    borderRadius: theme.radius.md,
+    textDecoration: 'none',
+    fontWeight: '700',
+    boxShadow: theme.shadows.success,
+  },
+  btnArrow: {
+    fontSize: '1.1rem',
   },
   infoCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
     display: 'flex',
     justifyContent: 'space-around',
     marginBottom: '2rem',
     flexWrap: 'wrap',
-    gap: '1rem',
+    gap: '1.5rem',
+    border: `1px solid ${theme.colors.borderLight}`,
   },
   infoItem: {
     textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.5rem',
   },
-  noPackageCard: {
-    backgroundColor: '#fff',
-    padding: '3rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    textAlign: 'center',
+  infoIcon: {
+    fontSize: '1.5rem',
   },
-  buyBtn: {
-    display: 'inline-block',
-    backgroundColor: '#27ae60',
-    color: '#fff',
-    padding: '1rem 2rem',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    fontWeight: 'bold',
-    marginTop: '1rem',
+  infoLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: '0.9rem',
+  },
+  infoValue: {
+    color: theme.colors.primaryDark,
+    fontSize: '1.25rem',
+  },
+  infoValueHighlight: {
+    color: theme.colors.success,
+    fontSize: '1.25rem',
   },
   activeTaskCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.lg,
     marginBottom: '2rem',
+    border: `2px solid ${theme.colors.primary}`,
   },
-  taskHeader: {
+  activeHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: '1.5rem',
-    gap: '1rem',
+    gap: '1.5rem',
+    flexWrap: 'wrap',
   },
-  taskSubtitle: {
-    color: '#7f8c8d',
-    margin: '0.5rem 0 0 0',
-    fontSize: '0.95rem',
+  activeInfo: {
+    flex: 1,
   },
-  timerBadge: {
-    backgroundColor: '#3498db',
-    color: '#fff',
-    padding: '1rem 1.5rem',
-    borderRadius: '50px',
-    fontWeight: 'bold',
+  activeLabel: {
+    display: 'inline-block',
+    backgroundColor: theme.colors.primaryBg,
+    color: theme.colors.primary,
+    padding: '0.25rem 0.75rem',
+    borderRadius: theme.radius.full,
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    marginBottom: '0.75rem',
+  },
+  activeTitle: {
     fontSize: '1.5rem',
-    minWidth: '100px',
-    textAlign: 'center',
-    boxShadow: '0 2px 8px rgba(52, 152, 219, 0.3)',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.5rem',
+  },
+  activeDesc: {
+    color: theme.colors.textSecondary,
+  },
+  timerWrapper: {
+    flexShrink: 0,
+  },
+  timerCircle: {
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    background: `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.primaryDark} 100%)`,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: theme.colors.white,
+    boxShadow: theme.shadows.button,
+  },
+  timerValue: {
+    fontSize: '1.75rem',
+    fontWeight: '800',
+    lineHeight: 1,
+  },
+  timerUnit: {
+    fontSize: '0.7rem',
+    opacity: 0.9,
   },
   embedContainer: {
     position: 'relative',
-    paddingBottom: '56.25%', // 16:9 aspect ratio
+    paddingBottom: '56.25%',
     height: 0,
     overflow: 'hidden',
-    borderRadius: '8px',
+    borderRadius: theme.radius.lg,
     marginBottom: '1.5rem',
     backgroundColor: '#000',
   },
@@ -341,50 +446,82 @@ const styles = {
     left: 0,
     width: '100%',
     height: '100%',
-    borderRadius: '8px',
+    borderRadius: theme.radius.lg,
   },
   noUrlMessage: {
     textAlign: 'center',
     padding: '2rem',
-    backgroundColor: '#ecf0f1',
-    borderRadius: '8px',
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.radius.lg,
     marginBottom: '1.5rem',
   },
-  timer: {
+  bigTimer: {
     display: 'flex',
     justifyContent: 'center',
-    margin: '2rem 0',
+    marginBottom: '1rem',
   },
-  timerCircle: {
-    width: '150px',
-    height: '150px',
+  bigTimerCircle: {
+    width: '120px',
+    height: '120px',
     borderRadius: '50%',
-    backgroundColor: '#3498db',
+    background: `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.primaryDark} 100%)`,
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '4px solid #2980b9',
+    color: theme.colors.white,
+    boxShadow: theme.shadows.button,
   },
-  timerText: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-  },
-  timerTextLarge: {
+  bigTimerValue: {
     fontSize: '2.5rem',
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: '800',
+    lineHeight: 1,
   },
-  instruction: {
-    fontSize: '1rem',
-    color: '#7f8c8d',
+  bigTimerUnit: {
+    fontSize: '0.8rem',
+    opacity: 0.9,
+  },
+  waitText: {
+    color: theme.colors.textSecondary,
+  },
+  progressBar: {
+    height: '6px',
+    backgroundColor: theme.colors.borderLight,
+    borderRadius: theme.radius.full,
+    overflow: 'hidden',
+    marginBottom: '1rem',
+  },
+  progressFill: {
+    height: '100%',
+    background: `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.success} 100%)`,
+    borderRadius: theme.radius.full,
+    transition: 'width 1s linear',
+  },
+  earnText: {
     textAlign: 'center',
-    margin: '1rem 0 0 0',
+    color: theme.colors.textSecondary,
+    fontSize: '0.95rem',
   },
   emptyState: {
     textAlign: 'center',
-    padding: '3rem',
-    backgroundColor: '#ecf0f1',
-    borderRadius: '8px',
+    padding: '4rem 2rem',
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
+    marginBottom: '2rem',
+  },
+  emptyIcon: {
+    fontSize: '4rem',
+    marginBottom: '1rem',
+  },
+  emptyTitle: {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.5rem',
+  },
+  emptyText: {
+    color: theme.colors.textSecondary,
   },
   taskGrid: {
     display: 'grid',
@@ -392,52 +529,74 @@ const styles = {
     gap: '1.5rem',
   },
   taskCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
+    border: `1px solid ${theme.colors.borderLight}`,
+    display: 'flex',
+    flexDirection: 'column',
   },
   taskType: {
     display: 'inline-block',
-    backgroundColor: '#3498db',
-    color: '#fff',
-    padding: '0.25rem 0.75rem',
-    borderRadius: '4px',
+    background: `linear-gradient(135deg, ${theme.colors.primaryBg} 0%, ${theme.colors.successBg} 100%)`,
+    color: theme.colors.primary,
+    padding: '0.375rem 0.875rem',
+    borderRadius: theme.radius.full,
     fontSize: '0.75rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: '1rem',
+    alignSelf: 'flex-start',
   },
   taskTitle: {
-    fontSize: '1.2rem',
-    color: '#2c3e50',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    color: theme.colors.primaryDark,
     marginBottom: '0.5rem',
   },
   taskDescription: {
-    color: '#7f8c8d',
+    color: theme.colors.textSecondary,
     marginBottom: '1rem',
     lineHeight: '1.6',
+    fontSize: '0.9rem',
+    flex: 1,
   },
   taskMeta: {
     display: 'flex',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: '1rem',
-    color: '#7f8c8d',
+  },
+  taskMetaItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.375rem',
+    color: theme.colors.textSecondary,
     fontSize: '0.9rem',
   },
-  reward: {
-    color: '#27ae60',
-    fontWeight: 'bold',
+  metaIcon: {
+    fontSize: '1rem',
+  },
+  rewardBadge: {
+    backgroundColor: theme.colors.successBg,
+    color: theme.colors.successDark,
+    padding: '0.375rem 0.75rem',
+    borderRadius: theme.radius.full,
+    fontWeight: '700',
+    fontSize: '0.9rem',
   },
   startBtn: {
     width: '100%',
-    backgroundColor: '#27ae60',
-    color: '#fff',
+    background: `linear-gradient(135deg, ${theme.colors.success} 0%, ${theme.colors.successDark} 100%)`,
+    color: theme.colors.white,
     border: 'none',
-    padding: '0.75rem',
-    borderRadius: '4px',
+    padding: '0.875rem',
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     cursor: 'pointer',
+    boxShadow: theme.shadows.success,
+    transition: 'all 0.2s ease',
   },
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../components/Notification';
 import { withdrawalAPI } from '../utils/api';
+import theme from '../theme';
 
 const Withdraw = () => {
   const { user } = useAuth();
@@ -43,12 +44,12 @@ const Withdraw = () => {
 
     const minWithdrawal = 300;
     if (parseFloat(formData.amount) < minWithdrawal) {
-      warning(`Minimum withdrawal amount is ₨${minWithdrawal}. Please enter an amount of at least ₨${minWithdrawal} to proceed.`);
+      warning(`Minimum withdrawal is ₨${minWithdrawal}`);
       return;
     }
 
     if (parseFloat(formData.amount) > user?.wallet?.balance) {
-      error(`Insufficient balance! Your current balance is ₨${user?.wallet?.balance}. Please enter an amount within your available balance.`);
+      error(`Insufficient balance! Your balance is ₨${user?.wallet?.balance}`);
       return;
     }
 
@@ -66,7 +67,7 @@ const Withdraw = () => {
         },
       });
 
-      success('Withdrawal request submitted successfully! Your request is pending approval. Funds will be transferred to your account within 24-48 hours after admin approval.');
+      success('Withdrawal request submitted! Funds will be transferred within 24-48 hours.');
       setFormData({
         amount: '',
         method: '',
@@ -78,32 +79,38 @@ const Withdraw = () => {
 
       loadWithdrawals();
     } catch (err) {
-      error(err.response?.data?.message || 'Failed to submit withdrawal request. Please try again or contact support.');
+      error(err.response?.data?.message || 'Failed to submit withdrawal request.');
     } finally {
       setLoading(false);
     }
   };
 
   const getStatusStyle = (status) => {
-    const styles = {
-      pending: { backgroundColor: '#f39c12', color: '#fff' },
-      processing: { backgroundColor: '#3498db', color: '#fff' },
-      completed: { backgroundColor: '#27ae60', color: '#fff' },
-      rejected: { backgroundColor: '#e74c3c', color: '#fff' },
+    const statusStyles = {
+      pending: { backgroundColor: theme.colors.warningBg, color: theme.colors.warning },
+      processing: { backgroundColor: theme.colors.primaryBg, color: theme.colors.primary },
+      completed: { backgroundColor: theme.colors.successBg, color: theme.colors.successDark },
+      rejected: { backgroundColor: theme.colors.dangerBg, color: theme.colors.danger },
     };
-    return styles[status] || {};
+    return statusStyles[status] || {};
   };
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Withdraw Money</h1>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Withdraw Money</h1>
+        <p style={styles.subtitle}>Transfer your earnings to your bank or wallet</p>
+      </div>
 
       <div style={styles.grid}>
         <div style={styles.formCard}>
-          <div style={styles.balanceInfo}>
-            <h3>Available Balance</h3>
-            <p style={styles.balance}>₨ {user?.wallet?.balance || 0}</p>
-            <small style={styles.minWithdraw}>Minimum withdrawal: ₨300</small>
+          <div style={styles.balanceCard}>
+            <div style={styles.balanceIcon}>💰</div>
+            <div style={styles.balanceInfo}>
+              <span style={styles.balanceLabel}>Available Balance</span>
+              <span style={styles.balanceAmount}>₨ {user?.wallet?.balance || 0}</span>
+            </div>
+            <div style={styles.minBadge}>Min: ₨300</div>
           </div>
 
           <form onSubmit={handleSubmit} style={styles.form}>
@@ -128,11 +135,11 @@ const Withdraw = () => {
                   </div>
                   <div style={styles.taxRow}>
                     <span>Tax (8%):</span>
-                    <strong style={{color: '#e74c3c'}}>- ₨ {Math.round(parseFloat(formData.amount) * 0.08)}</strong>
+                    <strong style={{color: theme.colors.danger}}>- ₨ {Math.round(parseFloat(formData.amount) * 0.08)}</strong>
                   </div>
-                  <div style={{...styles.taxRow, ...styles.netAmount}}>
+                  <div style={{...styles.taxRow, ...styles.netRow}}>
                     <span>You will receive:</span>
-                    <strong style={{color: '#27ae60'}}>₨ {parseFloat(formData.amount) - Math.round(parseFloat(formData.amount) * 0.08)}</strong>
+                    <strong style={{color: theme.colors.success}}>₨ {parseFloat(formData.amount) - Math.round(parseFloat(formData.amount) * 0.08)}</strong>
                   </div>
                 </div>
               )}
@@ -164,6 +171,7 @@ const Withdraw = () => {
                 value={formData.accountName}
                 onChange={handleChange}
                 style={styles.input}
+                placeholder="Your full name"
                 required
               />
             </div>
@@ -196,46 +204,69 @@ const Withdraw = () => {
             )}
 
             <button type="submit" style={styles.submitBtn} disabled={loading}>
-              {loading ? 'Processing...' : 'Submit Withdrawal Request'}
+              {loading ? (
+                <span style={styles.loadingText}>
+                  <span style={styles.spinner}></span>
+                  Processing...
+                </span>
+              ) : (
+                <>
+                  Submit Request
+                  <span style={styles.btnArrow}>→</span>
+                </>
+              )}
             </button>
           </form>
         </div>
 
         <div style={styles.historyCard}>
-          <h2>Withdrawal History</h2>
+          <div style={styles.historyHeader}>
+            <h2 style={styles.historyTitle}>Withdrawal History</h2>
+          </div>
 
           {withdrawals.length === 0 ? (
-            <p style={styles.emptyState}>No withdrawal requests yet</p>
+            <div style={styles.emptyState}>
+              <div style={styles.emptyIcon}>📋</div>
+              <p style={styles.emptyText}>No withdrawal requests yet</p>
+            </div>
           ) : (
             <div style={styles.historyList}>
               {withdrawals.map(withdrawal => (
                 <div key={withdrawal._id} style={styles.historyItem}>
-                  <div style={styles.historyHeader}>
+                  <div style={styles.historyItemHeader}>
                     <div>
-                      <strong>₨ {withdrawal.amount}</strong>
-                      <p style={styles.method}>{withdrawal.method.toUpperCase()}</p>
+                      <span style={styles.historyAmount}>₨ {withdrawal.amount}</span>
+                      <span style={styles.historyMethod}>{withdrawal.method.toUpperCase()}</span>
                       {withdrawal.taxAmount && (
-                        <div style={styles.taxInfo}>
-                          <small>Tax: ₨{withdrawal.taxAmount} | Net: ₨{withdrawal.netAmount}</small>
+                        <div style={styles.taxNote}>
+                          Tax: ₨{withdrawal.taxAmount} | Net: ₨{withdrawal.netAmount}
                         </div>
                       )}
                     </div>
-                    <span style={{...styles.status, ...getStatusStyle(withdrawal.status)}}>
+                    <span style={{...styles.statusBadge, ...getStatusStyle(withdrawal.status)}}>
                       {withdrawal.status}
                     </span>
                   </div>
 
                   <div style={styles.historyDetails}>
-                    <p><strong>Account:</strong> {withdrawal.accountDetails.accountName}</p>
-                    {withdrawal.accountDetails.accountNumber && (
-                      <p><strong>Number:</strong> {withdrawal.accountDetails.accountNumber}</p>
-                    )}
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Account:</span>
+                      <span>{withdrawal.accountDetails.accountName}</span>
+                    </div>
                     {withdrawal.accountDetails.phoneNumber && (
-                      <p><strong>Phone:</strong> {withdrawal.accountDetails.phoneNumber}</p>
+                      <div style={styles.detailRow}>
+                        <span style={styles.detailLabel}>Phone:</span>
+                        <span>{withdrawal.accountDetails.phoneNumber}</span>
+                      </div>
                     )}
-                    <p><strong>Requested:</strong> {new Date(withdrawal.createdAt).toLocaleDateString()}</p>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Date:</span>
+                      <span>{new Date(withdrawal.createdAt).toLocaleDateString()}</span>
+                    </div>
                     {withdrawal.remarks && (
-                      <p style={styles.remarks}><strong>Remarks:</strong> {withdrawal.remarks}</p>
+                      <div style={styles.remarksBox}>
+                        <span style={styles.remarksLabel}>Remarks:</span> {withdrawal.remarks}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -254,67 +285,70 @@ const styles = {
     margin: '0 auto',
     padding: '2rem 1rem',
   },
+  header: {
+    marginBottom: '2rem',
+  },
   title: {
     fontSize: '2rem',
-    color: '#2c3e50',
-    marginBottom: '2rem',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    marginBottom: '0.25rem',
+  },
+  subtitle: {
+    color: theme.colors.textSecondary,
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
     gap: '2rem',
   },
   formCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
     height: 'fit-content',
+    border: `1px solid ${theme.colors.borderLight}`,
+  },
+  balanceCard: {
+    background: `linear-gradient(135deg, ${theme.colors.primaryDark} 0%, ${theme.colors.primary} 100%)`,
+    borderRadius: theme.radius.lg,
+    padding: '1.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    marginBottom: '2rem',
+    color: theme.colors.white,
+    flexWrap: 'wrap',
+  },
+  balanceIcon: {
+    fontSize: '2rem',
   },
   balanceInfo: {
-    backgroundColor: '#ecf0f1',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    textAlign: 'center',
-    marginBottom: '2rem',
+    flex: 1,
+    minWidth: '150px',
   },
-  balance: {
-    fontSize: '2.5rem',
-    fontWeight: 'bold',
-    color: '#27ae60',
-    margin: '0.5rem 0',
+  balanceLabel: {
+    display: 'block',
+    fontSize: '0.85rem',
+    opacity: 0.9,
+    marginBottom: '0.25rem',
   },
-  minWithdraw: {
-    color: '#7f8c8d',
+  balanceAmount: {
+    fontSize: '2rem',
+    fontWeight: '800',
   },
-  taxBreakdown: {
-    backgroundColor: '#f8f9fa',
-    padding: '1rem',
-    borderRadius: '6px',
-    marginTop: '0.75rem',
-    border: '1px solid #e9ecef',
-  },
-  taxRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '0.4rem 0',
-    fontSize: '0.95rem',
-  },
-  netAmount: {
-    borderTop: '2px solid #27ae60',
-    marginTop: '0.5rem',
-    paddingTop: '0.75rem',
-    fontSize: '1.05rem',
-  },
-  taxInfo: {
-    color: '#7f8c8d',
-    fontSize: '0.8rem',
-    marginTop: '0.25rem',
+  minBadge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    padding: '0.5rem 1rem',
+    borderRadius: theme.radius.full,
+    fontSize: '0.85rem',
+    fontWeight: '600',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem',
+    gap: '1.25rem',
   },
   formGroup: {
     display: 'flex',
@@ -322,80 +356,170 @@ const styles = {
   },
   label: {
     marginBottom: '0.5rem',
-    color: '#2c3e50',
-    fontWeight: '500',
+    color: theme.colors.primaryDark,
+    fontWeight: '600',
+    fontSize: '0.9rem',
   },
   input: {
-    padding: '0.75rem',
-    border: '1px solid #bdc3c7',
-    borderRadius: '4px',
+    padding: '0.875rem 1rem',
+    border: `2px solid ${theme.colors.border}`,
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
+    transition: 'all 0.2s ease',
+    backgroundColor: theme.colors.background,
   },
   select: {
-    padding: '0.75rem',
-    border: '1px solid #bdc3c7',
-    borderRadius: '4px',
+    padding: '0.875rem 1rem',
+    border: `2px solid ${theme.colors.border}`,
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
+    cursor: 'pointer',
+  },
+  taxBreakdown: {
+    backgroundColor: theme.colors.background,
+    padding: '1rem',
+    borderRadius: theme.radius.md,
+    marginTop: '0.75rem',
+    border: `1px solid ${theme.colors.borderLight}`,
+  },
+  taxRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '0.375rem 0',
+    fontSize: '0.95rem',
+    color: theme.colors.textSecondary,
+  },
+  netRow: {
+    borderTop: `2px solid ${theme.colors.success}`,
+    marginTop: '0.5rem',
+    paddingTop: '0.75rem',
+    fontWeight: '600',
   },
   submitBtn: {
-    backgroundColor: '#27ae60',
-    color: '#fff',
+    background: `linear-gradient(135deg, ${theme.colors.success} 0%, ${theme.colors.successDark} 100%)`,
+    color: theme.colors.white,
     border: 'none',
     padding: '1rem',
-    borderRadius: '4px',
+    borderRadius: theme.radius.md,
     fontSize: '1.1rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     cursor: 'pointer',
-    marginTop: '1rem',
+    marginTop: '0.5rem',
+    boxShadow: theme.shadows.success,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.2s ease',
+  },
+  btnArrow: {
+    fontSize: '1.1rem',
+  },
+  loadingText: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+  },
+  spinner: {
+    width: '20px',
+    height: '20px',
+    border: '2px solid rgba(255,255,255,0.3)',
+    borderTopColor: theme.colors.white,
+    borderRadius: '50%',
+    animation: 'spin 0.8s linear infinite',
   },
   historyCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadows.card,
+    border: `1px solid ${theme.colors.borderLight}`,
+  },
+  historyHeader: {
+    marginBottom: '1.5rem',
+  },
+  historyTitle: {
+    fontSize: '1.25rem',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
   },
   emptyState: {
     textAlign: 'center',
-    color: '#7f8c8d',
-    padding: '2rem',
+    padding: '3rem 2rem',
+  },
+  emptyIcon: {
+    fontSize: '3rem',
+    marginBottom: '1rem',
+  },
+  emptyText: {
+    color: theme.colors.textSecondary,
   },
   historyList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
-    marginTop: '1rem',
   },
   historyItem: {
-    border: '1px solid #ecf0f1',
-    borderRadius: '8px',
-    padding: '1rem',
+    border: `1px solid ${theme.colors.borderLight}`,
+    borderRadius: theme.radius.lg,
+    padding: '1.25rem',
+    transition: 'all 0.2s ease',
   },
-  historyHeader: {
+  historyItemHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: '1rem',
+    gap: '1rem',
   },
-  method: {
-    color: '#7f8c8d',
-    fontSize: '0.85rem',
-    margin: '0.25rem 0',
+  historyAmount: {
+    fontSize: '1.25rem',
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    display: 'block',
   },
-  status: {
-    padding: '0.25rem 0.75rem',
-    borderRadius: '12px',
+  historyMethod: {
+    color: theme.colors.textSecondary,
     fontSize: '0.85rem',
-    fontWeight: 'bold',
+    marginTop: '0.25rem',
+    display: 'block',
+  },
+  taxNote: {
+    color: theme.colors.textMuted,
+    fontSize: '0.8rem',
+    marginTop: '0.25rem',
+  },
+  statusBadge: {
+    padding: '0.375rem 0.875rem',
+    borderRadius: theme.radius.full,
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
   historyDetails: {
-    lineHeight: '1.8',
     fontSize: '0.9rem',
-    color: '#2c3e50',
+    color: theme.colors.textSecondary,
   },
-  remarks: {
-    color: '#e74c3c',
-    marginTop: '0.5rem',
+  detailRow: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '0.375rem',
+  },
+  detailLabel: {
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  remarksBox: {
+    backgroundColor: theme.colors.dangerBg,
+    color: theme.colors.danger,
+    padding: '0.75rem',
+    borderRadius: theme.radius.md,
+    marginTop: '0.75rem',
+    fontSize: '0.85rem',
+  },
+  remarksLabel: {
+    fontWeight: '600',
   },
 };
 

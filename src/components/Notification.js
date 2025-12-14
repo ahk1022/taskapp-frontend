@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import theme from '../theme';
 
 const NotificationContext = createContext();
 
@@ -111,27 +112,27 @@ const NotificationModal = ({ message, type, onClose }) => {
     switch (type) {
       case 'success':
         return {
-          background: '#fff',
-          iconBg: '#27ae60',
-          borderColor: '#27ae60',
+          iconBg: theme.colors.success,
+          borderColor: theme.colors.success,
+          lightBg: theme.colors.successBg,
         };
       case 'error':
         return {
-          background: '#fff',
-          iconBg: '#e74c3c',
-          borderColor: '#e74c3c',
+          iconBg: theme.colors.danger,
+          borderColor: theme.colors.danger,
+          lightBg: theme.colors.dangerBg,
         };
       case 'warning':
         return {
-          background: '#fff',
-          iconBg: '#f39c12',
-          borderColor: '#f39c12',
+          iconBg: theme.colors.warning,
+          borderColor: theme.colors.warning,
+          lightBg: theme.colors.warningBg,
         };
       default:
         return {
-          background: '#fff',
-          iconBg: '#3498db',
-          borderColor: '#3498db',
+          iconBg: theme.colors.primary,
+          borderColor: theme.colors.primary,
+          lightBg: theme.colors.primaryBg,
         };
     }
   };
@@ -144,12 +145,18 @@ const NotificationModal = ({ message, type, onClose }) => {
         className="notification-modal"
         style={{
           ...styles.modal,
-          background: colors.background,
           borderTop: `4px solid ${colors.borderColor}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="notification-icon-circle" style={{ ...styles.iconCircle, backgroundColor: colors.iconBg }}>
+        <div
+          className="notification-icon-circle"
+          style={{
+            ...styles.iconCircle,
+            backgroundColor: colors.iconBg,
+            boxShadow: `0 6px 20px ${colors.iconBg}40`,
+          }}
+        >
           <span className="notification-icon" style={styles.icon}>{getIcon()}</span>
         </div>
         <h2 className="notification-title" style={{ ...styles.title, color: colors.iconBg }}>{getTitle()}</h2>
@@ -158,7 +165,8 @@ const NotificationModal = ({ message, type, onClose }) => {
           className="notification-button"
           style={{
             ...styles.button,
-            backgroundColor: colors.iconBg,
+            background: `linear-gradient(135deg, ${colors.iconBg} 0%, ${colors.iconBg}dd 100%)`,
+            boxShadow: `0 4px 15px ${colors.iconBg}40`,
           }}
           onClick={onClose}
         >
@@ -176,7 +184,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(44, 62, 80, 0.7)',
+    backgroundColor: 'rgba(30, 58, 95, 0.7)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -185,13 +193,13 @@ const styles = {
     animation: 'fadeIn 0.3s ease',
   },
   modal: {
-    backgroundColor: '#fff',
-    borderRadius: '12px',
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.radius.xl,
     padding: '2.5rem 2rem',
     maxWidth: '500px',
     width: '90%',
     textAlign: 'center',
-    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+    boxShadow: theme.shadows.lg,
     animation: 'slideUp 0.4s ease',
     position: 'relative',
     maxHeight: '90vh',
@@ -205,36 +213,34 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.12)',
   },
   icon: {
     fontSize: '3rem',
-    color: '#fff',
+    color: theme.colors.white,
     fontWeight: 'bold',
   },
   title: {
     fontSize: '1.5rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: '1rem',
   },
   message: {
     fontSize: '1rem',
-    color: '#7f8c8d',
+    color: theme.colors.textSecondary,
     marginBottom: '2rem',
     lineHeight: '1.6',
     fontWeight: '400',
   },
   button: {
-    color: '#fff',
+    color: theme.colors.white,
     border: 'none',
     padding: '0.85rem 3rem',
-    borderRadius: '8px',
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     outline: 'none',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
   },
 };
 
@@ -257,32 +263,28 @@ const ConfirmDialog = ({ message, title, confirmText, cancelText, type, onConfir
     switch (type) {
       case 'success':
         return {
-          background: '#fff',
-          iconBg: '#27ae60',
-          borderColor: '#27ae60',
-          confirmBg: '#27ae60',
+          iconBg: theme.colors.success,
+          borderColor: theme.colors.success,
+          confirmBg: theme.colors.success,
         };
       case 'error':
       case 'danger':
         return {
-          background: '#fff',
-          iconBg: '#e74c3c',
-          borderColor: '#e74c3c',
-          confirmBg: '#e74c3c',
+          iconBg: theme.colors.danger,
+          borderColor: theme.colors.danger,
+          confirmBg: theme.colors.danger,
         };
       case 'warning':
         return {
-          background: '#fff',
-          iconBg: '#f39c12',
-          borderColor: '#f39c12',
-          confirmBg: '#f39c12',
+          iconBg: theme.colors.warning,
+          borderColor: theme.colors.warning,
+          confirmBg: theme.colors.warning,
         };
       default:
         return {
-          background: '#fff',
-          iconBg: '#3498db',
-          borderColor: '#3498db',
-          confirmBg: '#3498db',
+          iconBg: theme.colors.primary,
+          borderColor: theme.colors.primary,
+          confirmBg: theme.colors.primary,
         };
     }
   };
@@ -295,12 +297,18 @@ const ConfirmDialog = ({ message, title, confirmText, cancelText, type, onConfir
         className="confirm-dialog notification-modal"
         style={{
           ...styles.modal,
-          background: colors.background,
           borderTop: `4px solid ${colors.borderColor}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="notification-icon-circle" style={{ ...styles.iconCircle, backgroundColor: colors.iconBg }}>
+        <div
+          className="notification-icon-circle"
+          style={{
+            ...styles.iconCircle,
+            backgroundColor: colors.iconBg,
+            boxShadow: `0 6px 20px ${colors.iconBg}40`,
+          }}
+        >
           <span className="notification-icon" style={styles.icon}>{getIcon()}</span>
         </div>
         <h2 className="notification-title" style={{ ...styles.title, color: colors.iconBg }}>{title}</h2>
@@ -317,7 +325,8 @@ const ConfirmDialog = ({ message, title, confirmText, cancelText, type, onConfir
             className="confirm-button"
             style={{
               ...confirmStyles.confirmButton,
-              backgroundColor: colors.confirmBg,
+              background: `linear-gradient(135deg, ${colors.confirmBg} 0%, ${colors.confirmBg}dd 100%)`,
+              boxShadow: `0 4px 15px ${colors.confirmBg}40`,
             }}
             onClick={onConfirm}
           >
@@ -336,28 +345,27 @@ const confirmStyles = {
     justifyContent: 'center',
   },
   cancelButton: {
-    color: '#7f8c8d',
-    backgroundColor: '#ecf0f1',
-    border: 'none',
+    color: theme.colors.textSecondary,
+    backgroundColor: theme.colors.background,
+    border: `2px solid ${theme.colors.border}`,
     padding: '0.85rem 2.5rem',
-    borderRadius: '8px',
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     outline: 'none',
   },
   confirmButton: {
-    color: '#fff',
+    color: theme.colors.white,
     border: 'none',
     padding: '0.85rem 2.5rem',
-    borderRadius: '8px',
+    borderRadius: theme.radius.md,
     fontSize: '1rem',
-    fontWeight: 'bold',
+    fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     outline: 'none',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
   },
 };
 
